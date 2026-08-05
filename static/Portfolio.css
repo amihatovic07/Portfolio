@@ -1,0 +1,632 @@
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    padding-top: 86px;
+    background: linear-gradient(160deg, #f7f5fb 0%, #eae3fb 45%, #f3eefc 100%);
+    min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ---------- Logo ---------- */
+.Logo1 {
+    height: 52px;
+    width: auto;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.Logo1:hover {
+    transform: scale(1.08);
+}
+
+/* ---------- Navbar ---------- */
+.navbar {
+    background: linear-gradient(135deg, #4d348c, #2e2058);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    box-shadow: 0 4px 16px rgba(77, 52, 140, 0.3);
+}
+
+.container-fluid {
+    align-items: center;
+}
+
+.navbar-nav .nav-link,
+.navbar .navbar-brand {
+    color: #ffffff;
+    font-weight: 500;
+    margin-left: 50px;
+    font-size: 25px;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-brand:hover  {
+    color: #b492ef;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 35px;
+    color: #ffffff;
+}
+
+/* ---------- Dropdown ---------- */
+.dropdown-toggle::after {
+    transition: transform 0.3s ease;
+}
+
+.show > .dropdown-toggle::after {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    font-size: 20px;
+}
+
+/* ---------- Carouseli ---------- */
+.carouselhome {
+    width: 100vw;
+    height: calc(100vh - 86px);
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.carousel-slika {
+    object-fit: cover;
+}
+
+.carousel-caption {
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 10px;
+    padding: 10px 20px;
+}
+/* ---------- Sekcije ---------- */
+.textsection1 {
+    width: min(1000px, 90%);
+    margin: 50px auto 75px auto;
+    font-size: 24px;
+    background-color: #f9f6f6;
+    padding: 25px;
+    border-radius: 45px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.picturesection1 {
+    width: min(800px, 95%);
+    margin: auto;
+    margin-bottom: 50px;
+    padding: 5px;
+    color: #f9f6f6;
+    border-radius: 45px;
+}
+
+/* ---------- Album kartice u galeriji ---------- */
+.album-kartica {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.album-kartica:hover {
+    transform: translateY(-4px);
+}
+
+.album-naslovna {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* ---------- Kartice ---------- */
+.card {
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+/* ---------- Kartice projekata ---------- */
+.project-card {
+    background: linear-gradient(145deg, #ffffff, #f2edff);
+    color: #2e2640;
+    border: 1px solid rgba(99, 69, 170, 0.25);
+    border-left: 6px solid #6345aa;
+    border-radius: 15px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 8px 20px rgba(70, 50, 120, 0.18);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(70, 50, 120, 0.28);
+}
+
+.project-card h5 {
+    color: #4d348c;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.projekt-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(99, 69, 170, 0.15);
+}
+
+.projekt-jezik {
+    background-color: #eee7fb;
+    color: #4d348c;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.projekt-status {
+    color: #6345aa;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.projekt-opis {
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 0;
+}
+
+.project-card .btn {
+    border-color: #6345aa;
+    color: #6345aa;
+}
+
+.project-card .btn:hover {
+    background-color: #6345aa;
+    border-color: #6345aa;
+    color: #ffffff;
+}
+
+/* ---------- Skrivena admin ikonica ---------- */
+.secret-icon {
+    margin-left: auto;      /* gura je skroz desno */
+    padding: 0 12px;
+    font-size: 18px;
+    color: #1a1a2e;         /* ista boja kao navbar = nevidljiva */
+    cursor: default;        /* ne mijenja kursor, ne odaje se */
+    user-select: none;
+    transition: color 0.4s ease;
+}
+
+.secret-icon:hover {
+    color: #60a5fa;         /* tek na hover se pojavi */
+}
+
+/* ---------- Admin modal ---------- */
+.admin-modal {
+    background-color: #1a1a2e;
+    color: #ffffff;
+    border-radius: 15px;
+    border: 1px solid #60a5fa;
+}
+
+.admin-modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.admin-greska {
+    color: #e94560;
+    font-size: 14px;
+    margin: 8px 0 0 0;
+}
+
+/* ---------- Admin mod navbar ---------- */
+.navbar-admin {
+    background-color: #16213e !important;
+    border-bottom: 2px solid #e94560;
+}
+
+.admin-badge {
+    background-color: #e94560;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    vertical-align: middle;
+    letter-spacing: 1px;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1.2); }
+    50%      { transform: scale(1.45); }
+}
+
+.secret-icon:hover {
+    color: #60a5fa;
+    text-shadow: 0 0 12px #60a5fa;
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+#pLista, #oLista {
+    scroll-margin-top: 100px;
+}
+
+.prikvacena-objava {
+    border-radius: 15px;
+    border-left: 6px solid #6345aa;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.badge-pin {
+    background-color: #6345aa;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.post-card {
+    border-radius: 15px;
+}
+
+.post-datum {
+    font-size: 13px;
+    color: #888;
+    white-space: nowrap;
+}
+
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-bar input,
+.filter-bar select {
+    max-width: 220px;
+}
+
+/* ===== MOBILE (≤576px) ===== */
+@media (max-width: 576px) {
+    body {
+        padding-top: 96px;   /* dva reda navbara sad, treba više prostora */
+    }
+
+    .navbar-toggler {
+        display: none;
+    }
+
+    /* Gornji red: samo logo + ikonice, uvijek u jednoj liniji */
+    .container-fluid {
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .navbar-brand {
+        font-size: 0.9rem !important;
+    }
+
+    .Logo1 {
+        height: 30px;
+    }
+
+    /* Donji red: linkovi, uvijek u jednoj liniji, scrolla se vodoravno ako treba */
+    .navbar-collapse {
+        display: flex !important;
+        flex-basis: 100%;
+        order: 3;
+        margin-top: 6px;
+    }
+
+    .navbar-nav {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        width: 100%;
+        gap: 4px;
+    }
+
+    .navbar-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .navbar-nav .nav-link {
+        font-size: 0.75rem !important;
+        margin-left: 0 !important;
+        padding: 4px 10px !important;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .navbar-right-icons {
+        order: 2;
+    }
+
+    .secret-icon {
+        font-size: 14px;
+        padding: 0 6px;
+    }
+
+    .carouselhome {
+        height: 280px !important;
+        max-height: 280px !important;
+    }
+
+    .carousel-caption {
+        padding: 6px 12px;
+    }
+
+    .carousel-caption h5 {
+        font-size: 0.9rem;
+    }
+
+    .project-card,
+    .post-card,
+    .prikvacena-objava,
+    .album-kartica {
+        margin: 0 4px;
+        border-radius: 14px;
+    }
+
+    .projekt-opis,
+    .post-card p {
+        font-size: 0.8rem !important;
+    }
+
+    .projekt-jezik,
+    .projekt-status,
+    .badge-pin {
+        font-size: 11px !important;
+    }
+
+    .admin-modal {
+        margin: 12px;
+    }
+
+    .filter-bar input,
+    .filter-bar select {
+        max-width: 100%;
+        flex: 1 1 100%;
+    }
+}
+
+.navbar-right-icons {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 8px;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.15);
+}
+
+/* ===== DARK MODE ===== */
+html[data-theme="dark"] body {
+    background: linear-gradient(160deg, #15151f 0%, #1c1c2b 100%);
+    color: #e8e6f0;
+}
+
+html[data-theme="dark"] .card {
+    background-color: #23233a;
+    color: #e8e6f0;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .project-card {
+    background: linear-gradient(145deg, #23233a, #2b2145);
+    color: #e0dcf0;
+    border-color: rgba(180, 150, 255, 0.25);
+}
+
+html[data-theme="dark"] .project-card h5 {
+    color: #b9a6ff;
+}
+
+html[data-theme="dark"] .projekt-jezik {
+    background-color: #352a52;
+    color: #d6c8ff;
+}
+
+html[data-theme="dark"] .projekt-status {
+    color: #b9a6ff;
+}
+
+html[data-theme="dark"] .projekt-meta {
+    border-bottom-color: rgba(180, 150, 255, 0.15);
+}
+
+html[data-theme="dark"] .project-card .btn {
+    border-color: #b9a6ff;
+    color: #b9a6ff;
+}
+
+html[data-theme="dark"] .project-card .btn:hover {
+    background-color: #6345aa;
+    border-color: #6345aa;
+    color: #fff;
+}
+
+html[data-theme="dark"] .post-card,
+html[data-theme="dark"] .album-kartica {
+    background-color: #23233a;
+    color: #e0dcf0;
+}
+
+html[data-theme="dark"] .post-datum {
+    color: #9a94b8;
+}
+
+html[data-theme="dark"] .prikvacena-objava {
+    background-color: #23233a;
+    color: #e0dcf0;
+    border-left-color: #b9a6ff;
+}
+
+html[data-theme="dark"] .badge-pin {
+    background-color: #7a5fc7;
+}
+
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select {
+    background-color: #1c1c2b;
+    color: #e8e6f0;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+html[data-theme="dark"] .form-control::placeholder {
+    color: #7a7590;
+}
+
+html[data-theme="dark"] #pForm,
+html[data-theme="dark"] #sForm,
+html[data-theme="dark"] #oForm {
+    background-color: #1c1c2b;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] .modal-content {
+    background-color: #23233a;
+    color: #e8e6f0;
+}
+
+html[data-theme="dark"] .text-muted {
+    color: #9a94b8 !important;
+}
+
+html[data-theme="dark"] .contact-section {
+    background: linear-gradient(135deg, #2b2145, #1c1c2b);
+}
+
+.contact-section {
+    width: 100%;
+    margin: 50px auto 0 auto;
+    padding: 50px 25px;
+    background: linear-gradient(135deg, #4d348c, #2e2058);
+    text-align: center;
+}
+
+.contact-title {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.contact-subtitle {
+    color: #d6c8ff;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.contact-icons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.contact-icon-link {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.25s ease, background-color 0.25s ease;
+}
+
+.contact-icon-link:hover {
+    transform: translateY(-4px) scale(1.08);
+    background-color: #6345aa;
+    color: #ffffff;
+}
+
+.discord-toast {
+    color: #d6c8ff;
+    font-size: 13px;
+    margin-top: 15px;
+    margin-bottom: 0;
+}
+
+/* ---------- About page ---------- */
+.about-hero {
+    text-align: center;
+    padding: 30px 0 10px 0;
+}
+
+.about-tagline {
+    color: #6345aa;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.about-card {
+    border-radius: 15px;
+    border-left: 6px solid #6345aa;
+    line-height: 1.6;
+}
+
+.skill-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.skill-badge {
+    color: #4d348c;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 6px 16px;
+    border-radius: 20px;
+}
+
+.skill-badge:hover {
+    transform: scale(1.3);
+    transition: transform 0.3s ease;
+}

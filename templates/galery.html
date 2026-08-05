@@ -1,0 +1,227 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h1 class="mb-4">Galery</h1>
+
+    {% if session.get('admin') %}
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary" id="sBtnNovi">+ Dodaj sliku</button>
+    </div>
+    <form id="sForm" class="d-none border rounded p-3 mb-4">
+        <input type="hidden" id="sId">
+        <div class="mb-2"><select id="sProjekt" class="form-select" required></select></div>
+        <div class="mb-2"><input type="file" id="sDatoteka" class="form-control" accept=".png,.jpg,.jpeg,.webp"></div>
+        <div class="form-check mb-2">
+            <input type="checkbox" id="sCarousel" class="form-check-input">
+            <label class="form-check-label" for="sCarousel">Prikaži u carouselu</label>
+        </div>
+        <button type="submit" class="btn btn-success">Spremi</button>
+        <button type="button" class="btn btn-secondary" id="sBtnOtkazi">Otkaži</button>
+        <p id="sGreska" class="text-danger d-none mt-2 mb-0"></p>
+    </form>
+    {% endif %}
+
+    <div id="sLista" class="row mt-3"></div>
+</div>
+
+<!-- Modal za prikaz svih slika jednog projekta -->
+<div class="modal fade" id="albumModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="albumModalNaziv"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="albumModalSlike" class="row"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const jeAdmin = {{ session.get('admin', false) | tojson }};
+let sCache = [];
+let grupirano = {};
+
+async function ucitajSlike() {
+    const odgovor = await fetch('/api/slike');
+    sCache = await odgovor.json();
+
+    // Grupiranje slika po projektu
+    grupirano = {};
+    sCache.forEach(s => {
+        if (!grupirano[s.projekt_id]) {
+            grupirano[s.projekt_id] = { naziv: s.projekt_naziv, slike: [] };
+        }
+        grupirano[s.projekt_id].slike.push(s);
+    });
+
+    const lista = document.getElementById('sLista');
+    const projektIds = Object.keys(grupirano);
+    lista.innerHTML = projektIds.length ? '' : '<p>Still no pictures.</p>';
+
+    projektIds.forEach(id => {
+        const grupa = grupirano[id];
+        // Naslovna slika: preferira onu označenu za carousel, inače prvu
+        const naslovna = grupa.slike.find(s => s.u_carouselu) || grupa.slike[0];
+        const brojSlika = grupa.slike.length;
+
+        const kol = document.createElement('div');
+        kol.className = 'col-md-4 mb-4';
+        kol.innerHTML = `
+            <div class="card h-100 album-kartica">
+                <img src="${naslovna.slika}" class="album-naslovna" alt="">
+                <div class="card-body text-center">
+                    <h5 class="mb-1">${grupa.naziv}</h5>
+                    <p class="small text-muted mb-3">${brojSlika} ${brojSlika === 1 ? 'picture' : 'pictures'}</p>
+                    <button class="btn btn-outline-primary btn-sm" onclick="otvoriAlbum(${id})">Show all pictures</button>
+                </div>
+            </div>`;
+        lista.appendChild(kol);
+    });
+}
+
+function otvoriAlbum(projektId) {
+    const grupa = grupirano[projektId];
+    if (!grupa) return;
+
+    document.getElementById('albumModalNaziv').textContent = grupa.naziv;
+
+    const kontejner = document.getElementById('albumModalSlike');
+    kontejner.innerHTML = grupa.slike.map(s => `
+        <div class="col-md-6 mb-3">
+            <div class="card p-2 h-100">
+                <img src="${s.slika}" class="img-fluid mb-2 rounded" alt="">
+                ${s.u_carouselu ? '<p class="small text-primary mb-1">In carousel</p>' : ''}
+                ${jeAdmin ? `
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-primary" onclick="urediSliku(${s.id})">Uredi</button>
+                    <button class="btn btn-sm btn-danger" onclick="obrisiSliku(${s.id})">Obriši</button>
+                </div>
+                ` : ''}
+            </div>
+        </div>`).join('');
+
+    const modal = new bootstrap.Modal(document.getElementById('albumModal'));
+    modal.show();
+}
+
+if (jeAdmin) {
+    const sForm = document.getElementById('sForm');
+
+    async function ucitajProjekteZaSelect() {
+        const odgovor = await fetch('/api/projekti');
+        const svi = await odgovor.json();
+        document.getElementById('sProjekt').innerHTML =
+            svi.map(p => `<option value="${p.id}">${p.naziv}</option>`).join('');
+    }
+
+    document.getElementById('sBtnNovi').addEventListener('click', async () => {
+        sForm.reset();
+        document.getElementById('sId').value = '';
+        await ucitajProjekteZaSelect();
+        sForm.classList.remove('d-none');
+    });
+    document.getElementById('sBtnOtkazi').addEventListener('click', () => sForm.classList.add('d-none'));
+
+    sForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const greska = document.getElementById('sGreska');
+        greska.classList.add('d-none');
+        greska.textContent = '';
+
+        const id = document.getElementById('sId').value;
+        const projektId = document.getElementById('sProjekt').value;
+        const datoteka = document.getElementById('sDatoteka').files[0];
+
+        if (!projektId) {
+            greska.textContent = 'Potrebno je odabrati projekt.';
+            greska.classList.remove('d-none');
+            return;
+        }
+
+        if (!id && !datoteka) {
+            greska.textContent = 'Potrebno je odabrati sliku.';
+            greska.classList.remove('d-none');
+            return;
+        }
+
+        const fd = new FormData();
+        fd.append('projekt_id', projektId);
+        fd.append('u_carouselu', document.getElementById('sCarousel').checked);
+        if (datoteka) fd.append('slika', datoteka);
+
+        const url = id ? `/admin/slike/uredi/${id}` : '/admin/slike/dodavanje';
+
+        try {
+            const odgovor = await fetch(url, { method: id ? 'PUT' : 'POST', body: fd });
+
+            if (odgovor.redirected) {
+                throw new Error('Admin sesija više nije važeća. Ponovno se prijavi.');
+            }
+
+            const contentType = odgovor.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                const tekst = await odgovor.text();
+                console.error('Odgovor servera:', tekst);
+                throw new Error(`Server nije vratio JSON. HTTP status: ${odgovor.status}`);
+            }
+
+            const rezultat = await odgovor.json();
+
+            if (!odgovor.ok || !rezultat.uspjeh) {
+                throw new Error(rezultat.poruka || 'Spremanje slike nije uspjelo.');
+            }
+
+            sForm.reset();
+            document.getElementById('sId').value = '';
+            sForm.classList.add('d-none');
+
+            await ucitajSlike();
+
+        } catch (error) {
+            console.error(error);
+            greska.textContent = error.message;
+            greska.classList.remove('d-none');
+        }
+    });
+
+    window.urediSliku = async (id) => {
+        const s = sCache.find(x => x.id === id);
+        await ucitajProjekteZaSelect();
+        document.getElementById('sId').value = s.id;
+        document.getElementById('sProjekt').value = s.projekt_id;
+        document.getElementById('sCarousel').checked = s.u_carouselu;
+
+        // Zatvori album modal ako je otvoren, pa pokaži formu
+        const modalEl = document.getElementById('albumModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        sForm.classList.remove('d-none');
+        sForm.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.obrisiSliku = async (id) => {
+        if (!confirm('Sigurno obrisati sliku?')) return;
+
+        const projektId = sCache.find(x => x.id === id)?.projekt_id;
+        await fetch(`/admin/slike/uklanjanje/${id}`, { method: 'DELETE' });
+        await ucitajSlike();
+
+        // Osvježi otvoreni album ili ga zatvori ako je zadnja slika obrisana
+        if (projektId && grupirano[projektId]) {
+            otvoriAlbum(projektId);
+        } else {
+            const modalEl = document.getElementById('albumModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+        }
+    };
+}
+
+ucitajSlike();
+</script>
+{% endblock %}

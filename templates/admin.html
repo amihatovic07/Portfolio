@@ -1,0 +1,211 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h1 class="mb-4">Admin panel</h1>
+
+    <!-- PROJEKTI -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3>Projekti</h3>
+            <button class="btn btn-primary" id="pBtnNovi">+ Novi projekt</button>
+        </div>
+        <form id="pForm" class="d-none border rounded p-3 mt-3">
+            <input type="hidden" id="pId">
+            <div class="mb-2"><input type="text" id="pNaziv" class="form-control" placeholder="Naziv" required></div>
+            <div class="mb-2"><input type="text" id="pJezik" class="form-control" placeholder="Jezik/tehnologija" required></div>
+            <div class="mb-2"><textarea id="pOpis" class="form-control" placeholder="Opis" required></textarea></div>
+            <div class="mb-2"><input type="text" id="pStatus" class="form-control" placeholder="Status (npr. Gotov, U tijeku)" required></div>
+            <div class="mb-2"><input type="url" id="pLink" class="form-control" placeholder="GitHub link" required></div>
+            <button type="submit" class="btn btn-success">Spremi</button>
+            <button type="button" class="btn btn-secondary" id="pBtnOtkazi">Otkaži</button>
+            <p id="pGreska" class="text-danger d-none mt-2 mb-0"></p>
+        </form>
+        <div id="pLista" class="row mt-3"></div>
+    </section>
+
+    <!-- OBJAVE -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3>Objave</h3>
+            <button class="btn btn-primary" id="oBtnNovi">+ Nova objava</button>
+        </div>
+        <form id="oForm" class="d-none border rounded p-3 mt-3">
+            <input type="hidden" id="oId">
+            <div class="mb-2"><input type="text" id="oNaziv" class="form-control" placeholder="Naziv" required></div>
+            <div class="mb-2"><textarea id="oTekst" class="form-control" placeholder="Tekst objave" required></textarea></div>
+            <div class="mb-2"><input type="file" id="oDatoteka" class="form-control" accept=".png,.jpg,.jpeg,.webp"></div>
+            <div class="form-check mb-2" id="oObrisiSlikuWrap" style="display:none;">
+                <input type="checkbox" id="oObrisiSliku" class="form-check-input">
+                <label class="form-check-label" for="oObrisiSliku">Ukloni trenutnu sliku</label>
+            </div>
+            <button type="submit" class="btn btn-success">Spremi</button>
+            <button type="button" class="btn btn-secondary" id="oBtnOtkazi">Otkaži</button>
+            <p id="oGreska" class="text-danger d-none mt-2 mb-0"></p>
+        </form>
+        <div id="oLista" class="row mt-3"></div>
+    </section>
+</div>
+
+<script>
+/* ============ PROJEKTI ============ */
+const pForm = document.getElementById('pForm');
+let pCache = [];
+
+document.getElementById('pBtnNovi').addEventListener('click', () => {
+    pForm.reset();
+    document.getElementById('pId').value = '';
+    pForm.classList.remove('d-none');
+});
+document.getElementById('pBtnOtkazi').addEventListener('click', () => pForm.classList.add('d-none'));
+
+pForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const greska = document.getElementById('pGreska');
+    greska.classList.add('d-none');
+
+    const id = document.getElementById('pId').value;
+    const podaci = {
+        naziv: document.getElementById('pNaziv').value,
+        jezik: document.getElementById('pJezik').value,
+        opis: document.getElementById('pOpis').value,
+        status: document.getElementById('pStatus').value,
+        link: document.getElementById('pLink').value
+    };
+
+    const url = id ? `/admin/uredi/${id}` : '/admin/dodavanje';
+    const odgovor = await fetch(url, {
+        method: id ? 'PUT' : 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(podaci)
+    });
+    const rezultat = await odgovor.json();
+
+    if (rezultat.uspjeh) {
+        pForm.classList.add('d-none');
+        ucitajProjekte();
+    } else {
+        greska.textContent = rezultat.poruka;
+        greska.classList.remove('d-none');
+    }
+});
+
+async function ucitajProjekte() {
+    const odgovor = await fetch('/api/projekti');
+    pCache = await odgovor.json();
+    const lista = document.getElementById('pLista');
+    lista.innerHTML = pCache.length ? '' : '<p>Još nema projekata.</p>';
+
+    pCache.forEach(p => {
+        const kol = document.createElement('div');
+        kol.className = 'col-md-4 mb-3';
+        kol.innerHTML = `
+            <div class="card p-3 h-100">
+                <h5>${p.naziv}</h5>
+                <p class="mb-1"><strong>${p.jezik}</strong> — ${p.status}</p>
+                <p class="small">${p.opis}</p>
+                <div>
+                    <button class="btn btn-sm btn-primary" onclick="urediProjekt(${p.id})">Uredi</button>
+                    <button class="btn btn-sm btn-danger" onclick="obrisiProjekt(${p.id})">Obriši</button>
+                </div>
+            </div>`;
+        lista.appendChild(kol);
+    });
+}
+
+function urediProjekt(id) {
+    const p = pCache.find(x => x.id === id);
+    document.getElementById('pId').value = p.id;
+    document.getElementById('pNaziv').value = p.naziv;
+    document.getElementById('pJezik').value = p.jezik;
+    document.getElementById('pOpis').value = p.opis;
+    document.getElementById('pStatus').value = p.status;
+    document.getElementById('pLink').value = p.link;
+    pForm.classList.remove('d-none');
+}
+
+async function obrisiProjekt(id) {
+    if (!confirm('Sigurno obrisati projekt (i sve njegove slike)?')) return;
+    await fetch(`/admin/uklanjanje/${id}`, {method: 'DELETE'});
+    ucitajProjekte();
+}
+
+/* ============ OBJAVE ============ */
+const oForm = document.getElementById('oForm');
+let oCache = [];
+
+document.getElementById('oBtnNovi').addEventListener('click', () => {
+    oForm.reset();
+    document.getElementById('oId').value = '';
+    document.getElementById('oObrisiSlikuWrap').style.display = 'none';
+    oForm.classList.remove('d-none');
+});
+document.getElementById('oBtnOtkazi').addEventListener('click', () => oForm.classList.add('d-none'));
+
+oForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const greska = document.getElementById('oGreska');
+    greska.classList.add('d-none');
+
+    const id = document.getElementById('oId').value;
+    const fd = new FormData();
+    fd.append('naziv', document.getElementById('oNaziv').value);
+    fd.append('tekst', document.getElementById('oTekst').value);
+    const datoteka = document.getElementById('oDatoteka').files[0];
+    if (datoteka) fd.append('slika', datoteka);
+    if (id) fd.append('obrisi_sliku', document.getElementById('oObrisiSliku').checked);
+
+    const url = id ? `/admin/objave/uredi/${id}` : '/admin/objave/dodavanje';
+    const odgovor = await fetch(url, { method: id ? 'PUT' : 'POST', body: fd });
+    const rezultat = await odgovor.json();
+
+    if (rezultat.uspjeh) {
+        oForm.classList.add('d-none');
+        ucitajObjave();
+    } else {
+        greska.textContent = rezultat.poruka;
+        greska.classList.remove('d-none');
+    }
+});
+
+async function ucitajObjave() {
+    const odgovor = await fetch('/api/objave');
+    oCache = await odgovor.json();
+    const lista = document.getElementById('oLista');
+    lista.innerHTML = oCache.length ? '' : '<p>Još nema objava.</p>';
+
+    oCache.forEach(o => {
+        const kol = document.createElement('div');
+        kol.className = 'col-md-4 mb-3';
+        kol.innerHTML = `
+            <div class="card p-3 h-100">
+                ${o.slika ? `<img src="${o.slika}" class="img-fluid mb-2" alt="">` : ''}
+                <h5>${o.naziv}</h5>
+                <p class="small">${o.tekst}</p>
+                <button class="btn btn-sm btn-primary" onclick="urediObjavu(${o.id})">Uredi</button>
+                <button class="btn btn-sm btn-danger" onclick="obrisiObjavu(${o.id})">Obriši</button>
+            </div>`;
+        lista.appendChild(kol);
+    });
+}
+
+function urediObjavu(id) {
+    const o = oCache.find(x => x.id === id);
+    document.getElementById('oId').value = o.id;
+    document.getElementById('oNaziv').value = o.naziv;
+    document.getElementById('oTekst').value = o.tekst;
+    document.getElementById('oObrisiSlikuWrap').style.display = o.slika ? 'block' : 'none';
+    document.getElementById('oObrisiSliku').checked = false;
+    oForm.classList.remove('d-none');
+}
+
+async function obrisiObjavu(id) {
+    if (!confirm('Sigurno obrisati objavu?')) return;
+    await fetch(`/admin/objave/uklanjanje/${id}`, {method: 'DELETE'});
+    ucitajObjave();
+}
+
+/* ============ Početno učitavanje ============ */
+ucitajProjekte();
+ucitajObjave();
+</script>
+{% endblock %}
