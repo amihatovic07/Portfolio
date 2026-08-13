@@ -10,9 +10,30 @@ from dotenv import load_dotenv
 
 # Dio gdje se radi sa bazom podataka kako bi se formirala baza
 app = Flask(__name__)
+@app.after_request
+def dodaj_sigurnosne_headere(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+    response.headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains'
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "font-src 'self' https://cdn.jsdelivr.net; "
+        "img-src 'self' data:; "
+        "connect-src 'self';"
+    )
+    return response
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///portfolio.db'
 db = SQLAlchemy(app)
 
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
 # Dio za konfiguraciju passworda za ulazak unutar admin panela
 load_dotenv()
 
@@ -359,6 +380,7 @@ def uklanjanje_slike(id):
 
 # Ruta za unos passworda za ulazak unutar admin panela
 @app.route("/api/admin/login", methods=['POST'])
+@limiter.limit("5 per minute")
 def admin_login():
     podaci = request.get_json() or {}
     if podaci and podaci.get('kod') == ADMIN_KOD:
