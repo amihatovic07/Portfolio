@@ -1,42 +1,140 @@
-{% extends "main.html" %}
-{% block content %}
+{% extends "main.html" %} {% block content %}
 <div class="container mt-4 mb-5">
+  <section class="about-hero">
+    <h1 class="mb-2">About Me</h1>
+  </section>
 
-    <section class="about-hero">
-        <h1 class="mb-2">About Me</h1>
-    </section>
+  <section class="mb-5">
+    <div class="card p-4 about-card">
+      <h3 class="mb-3">Who I am</h3>
+      <p>
+        I am Alex, a first-year student studying at the University of
+        Informatics in Pula, and I'm currently trying to learn all kinds of
+        programming languages and technologies in order to become a proper full
+        stack developer, cyber security expert and a software engineer. I know
+        I'm only at the beginning of the path, but as I progress I will make
+        more and more projects which are complex, useful in some ways, and more
+        efficient over time.
+      </p>
+    </div>
+  </section>
 
-    <section class="mb-5">
-        <div class="card p-4 about-card">
-            <h3 class="mb-3">Who I am</h3>
-            <p>
-                I am student of Informatics at Pula and I am currently trying to learn all kinds of programming languanges and technologies in order to become a proper full stack developer, cyber security expert and a software engineer. Currently I know I am only at the beginning of path but as I progress I will make more and more projects which are complex, useful in some ways and more efficient over time.
-            </p>
+  <section class="mb-5">
+    <h3 class="mb-3">Programming technologies i am learning currently</h3>
+    <div class="skill-badges">
+      <div class="skill-badge">
+        <button class="skill-badge-btn" type="button">Python</button>
+        <div class="skill-popover">
+          <p>
+            General-purpose language known for readability — used here for
+            backend logic and scripting.
+          </p>
         </div>
-    </section>
+      </div>
 
-    <section class="mb-5">
-        <h3 class="mb-3">Programming technologies I am learning currently</h3>
-        <div class="skill-badges">
-            <span class="skill-badge">Python</span>
-            <span class="skill-badge">Flask</span>
-            <span class="skill-badge">SQLAlchemy</span>
-            <span class="skill-badge">JavaScript</span>
-            <span class="skill-badge">HTML / CSS</span>
-            <span class="skill-badge">C++</span>
-            <span class="skill-badge">SQL</span>
-            <span class="skill-badge">Shell</span>
+      <div class="skill-badge">
+        <button class="skill-badge-btn" type="button">Flask</button>
+        <div class="skill-popover">
+          <p>
+            Lightweight Python web framework — powers this site's backend and
+            API routes.
+          </p>
         </div>
-    </section>
+      </div>
 
-    <section class="mb-5">
-        <div class="card p-4 about-card">
-            <h3 class="mb-3">Current state</h3>
-            <p>
-                Currently I am still learning and I am using a bit of artificial technology to help me from time to time but only if I am really stuck and don't know how to progress since i didn't learn everything and I still have a lot to learn but I am using less and less ai as I progress more and hopefully I will come to a point where I wont need it anymore at all in any project I do in the near future.
-            </p>
+      <div class="skill-badge">
+        <button class="skill-badge-btn" type="button">SQLAlchemy</button>
+        <div class="skill-popover">
+          <p>
+            Python toolkit for working with the database through objects instead
+            of raw SQL - used for creating and managing this site's database.
+          </p>
         </div>
-    </section>
+      </div>
 
+      <div class="skill-badge">
+        <button class="skill-badge-btn" type="button">JavaScript</button>
+        <div class="skill-popover">
+          <p>
+            Handles interactivity and dynamic content updates directly in the
+            browser.
+          </p>
+        </div>
+      </div>
+
+      <div class="skill-badge">
+        <button class="skill-badge-btn" type="button">HTML / CSS</button>
+        <div class="skill-popover">
+          <p>
+            The structure and styling behind every page you're currently looking
+            at.
+          </p>
+        </div>
+      </div>
+
+      <div class="skill-badge">
+        <button class="skill-badge-btn" type="button">C++</button>
+        <div class="skill-popover">
+          <p>
+            Lower-level language used for performance-focused console projects
+            like TODO-APP, ROUTE-Tracker, etc...
+          </p>
+        </div>
+      </div>
+
+      <div class="skill-badge">
+        <button class="skill-badge-btn" type="button">SQL</button>
+        <div class="skill-popover">
+          <p>
+            Language for querying and managing relational databases directly.
+          </p>
+        </div>
+      </div>
+
+      <div class="skill-badge">
+        <button class="skill-badge-btn" type="button">Shell</button>
+        <div class="skill-popover">
+          <p>
+            Command-line scripting used for automation and server-side tasks.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-5">
+    <div class="card p-4 about-card">
+      <h3 class="mb-3">Current state of my progress</h3>
+      <p>
+        As I am still only learning, I sometimes use a bit of artificial
+        technology to guide me when I get really stuck on a project and need
+        help. I am currently aiming to reduce the help of AI in my work, and
+        hopefully already in the near future I won't be needing it anymore at
+        all.
+      </p>
+    </div>
+  </section>
 </div>
+
+<script>
+  document.querySelectorAll(".skill-badge-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const parent = btn.closest(".skill-badge");
+      const wasOpen = parent.classList.contains("open");
+
+      document
+        .querySelectorAll(".skill-badge.open")
+        .forEach((el) => el.classList.remove("open"));
+
+      if (!wasOpen) parent.classList.add("open");
+    });
+  });
+
+  document.addEventListener("click", () => {
+    document
+      .querySelectorAll(".skill-badge.open")
+      .forEach((el) => el.classList.remove("open"));
+  });
+</script>
 {% endblock %}
