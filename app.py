@@ -28,6 +28,7 @@ def dodaj_sigurnosne_headere(response):
     return response
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///portfolio.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/amihatovic07/Portfolio/portfolio.db'
 db = SQLAlchemy(app)
 
 from flask_limiter import Limiter
@@ -35,7 +36,8 @@ from flask_limiter.util import get_remote_address
 
 limiter = Limiter(key_func=get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
 # Dio za konfiguraciju passworda za ulazak unutar admin panela
-load_dotenv()
+from pathlib import Path
+load_dotenv(Path(__file__).resolve().parent / '.env')
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', secrets.token_hex(32))
 ADMIN_KOD = os.environ.get('ADMIN_KOD')
