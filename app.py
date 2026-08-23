@@ -28,8 +28,7 @@ def dodaj_sigurnosne_headere(response):
     )
     return response
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///portfolio.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/amihatovic07/Portfolio/portfolio.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///portfolio.db')
 db = SQLAlchemy(app)
 
 from flask_limiter import Limiter
@@ -67,14 +66,24 @@ DOZVOLJENE_EKSTENZIJE = {
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 
-# Formirana klasa projekt
+# Asocijacijska tablica za vezu projekt <-> tag (mnogo-na-mnogo)
+projekt_tagovi = db.Table(
+    'projekt_tagovi',
+    db.Column('projekt_id', db.Integer, db.ForeignKey('projekt.id'), primary_key=True),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True)
+)
+
+class tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    naziv = db.Column(db.String(40), unique=True, nullable=False)
+
 class projekt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     naziv = db.Column(db.String(50), nullable=False)
-    jezik = db.Column(db.String(40), nullable=False)
     opis = db.Column(db.String(400), nullable=False)
     status = db.Column(db.String(30), nullable=False)
     link = db.Column(db.String(100), nullable=False)
+    tagovi = db.relationship('tag', secondary=projekt_tagovi, backref='projekti')
     slike = db.relationship(
         "slika",
         backref="projekt",
@@ -164,6 +173,18 @@ def pretvori_u_boolean(vrijednost):
         "da"
     }
 
+def dohvati_ili_kreiraj_tagove(tekst_tagova):
+    nazivi = [t.strip() for t in tekst_tagova.split(',') if t.strip()]
+    tagovi = []
+    for naziv in nazivi:
+        t = tag.query.filter(db.func.lower(tag.naziv) == naziv.lower()).first()
+        if not t:
+            t = tag(naziv=naziv)
+            db.session.add(t)
+            db.session.flush()
+        tagovi.append(t)
+    return tagovi
+
 # Funkcija sortira rezultate prema parametrima iz URL-a
 def sortirani_upit(model, dozvoljena_polja, zadano_polje="id"):
     polje = request.args.get("sort", zadano_polje).lower()
@@ -198,21 +219,12 @@ def index():
 # Ruta za prikazivanje i sortiranje projekata
 @app.route("/api/projekti", methods=["GET"])
 def projekti():
-    svi = sortirani_upit(
-        projekt,
-        {
-            "id": projekt.id,
-            "naziv": projekt.naziv,
-            "jezik": projekt.jezik,
-            "status": projekt.status
-        }
-    ).all()
-
+    svi = projekt.query.order_by(projekt.id.asc()).all()
     return jsonify([
         {
             "id": zapis.id,
             "naziv": zapis.naziv,
-            "jezik": zapis.jezik,
+            "tagovi": [t.naziv for t in zapis.tagovi],
             "opis": zapis.opis,
             "status": zapis.status,
             "link": zapis.link
@@ -423,15 +435,15 @@ def admin_logout():
 def dodavanje_projekta():
     podaci = request.get_json() or {}
     naziv = podaci.get("naziv", "").strip()
-    jezik = podaci.get('jezik', "").strip()
+    tagovi_tekst = podaci.get('tagovi', "").strip()
     opis = podaci.get('opis', "").strip()
     status = podaci.get('status', "").strip()
     link = podaci.get('link', "").strip()
 
-    if not naziv or not jezik or not opis or not status or not link:
+    if not naziv or not tagovi_tekst or not opis or not status or not link:
         return jsonify({
             "uspjeh": False,
-            "poruka": "Naziv, jezik, opis, status i link su obavezni podaci!"
+            "poruka": "Naziv, tagovi, opis, status i link su obavezni podaci!"
         }), 400
 
     if projekt.query.filter_by(naziv=naziv).first():
@@ -439,8 +451,9 @@ def dodavanje_projekta():
             "uspjeh": False,
             "poruka": "Projekt s tim nazivom već postoji!"
         }), 400
-    
-    novi = projekt(naziv=naziv, jezik=jezik, opis=opis, status=status, link=link)
+
+    novi = projekt(naziv=naziv, opis=opis, status=status, link=link)
+    novi.tagovi = dohvati_ili_kreiraj_tagove(tagovi_tekst)
     db.session.add(novi)
     db.session.commit()
     return jsonify({'uspjeh': True, 'poruka': 'Projekt je uspješno dodan!'}), 201
@@ -466,23 +479,23 @@ def uklanjanje_projekta(id):
 @app.route('/admin/uredi/<int:id>', methods=['PUT'])
 @admin_required
 def uredivanje_projekta(id):
-    zapis= projekt.query.get_or_404(id)
+    zapis = projekt.query.get_or_404(id)
     podaci = request.get_json() or {}
     naziv = podaci.get('naziv', "").strip()
-    jezik = podaci.get('jezik', "").strip()
+    tagovi_tekst = podaci.get('tagovi', "").strip()
     opis = podaci.get('opis', "").strip()
     status = podaci.get('status', "").strip()
     link = podaci.get('link', "").strip()
 
-    if not naziv or not jezik or not opis or not status or not link:
+    if not naziv or not tagovi_tekst or not opis or not status or not link:
         return jsonify({
             "uspjeh": False,
-            "poruka": "Naziv, jezik, opis, status i link su obavezni podaci!"
+            "poruka": "Naziv, tagovi, opis, status i link su obavezni podaci!"
         }), 400
-    
+
     postojeci_projekt = projekt.query.filter(
-    projekt.naziv == naziv,
-    projekt.id != id
+        projekt.naziv == naziv,
+        projekt.id != id
     ).first()
 
     if postojeci_projekt:
@@ -490,12 +503,12 @@ def uredivanje_projekta(id):
             "uspjeh": False,
             "poruka": "Drugi projekt s tim nazivom već postoji!"
         }), 400
-     
+
     zapis.naziv = naziv
-    zapis.jezik = jezik
     zapis.opis = opis
     zapis.status = status
     zapis.link = link
+    zapis.tagovi = dohvati_ili_kreiraj_tagove(tagovi_tekst)
 
     db.session.commit()
     return jsonify({'uspjeh': True, 'poruka': 'Projekt je uspješno ažuriran!'}), 200
