@@ -12,7 +12,7 @@
         <form id="pForm" class="d-none border rounded p-3 mt-3">
             <input type="hidden" id="pId">
             <div class="mb-2"><input type="text" id="pNaziv" class="form-control" placeholder="Naziv" required></div>
-            <div class="mb-2"><input type="text" id="pJezik" class="form-control" placeholder="Jezik/tehnologija" required></div>
+            <div class="mb-2"><input type="text" id="pTagovi" class="form-control" placeholder="Tags (comma separated, e.g. HTML, CSS, JS)" required></div>
             <div class="mb-2"><textarea id="pOpis" class="form-control" placeholder="Opis" required></textarea></div>
             <div class="mb-2"><input type="text" id="pStatus" class="form-control" placeholder="Status (npr. Gotov, U tijeku)" required></div>
             <div class="mb-2"><input type="url" id="pLink" class="form-control" placeholder="GitHub link" required></div>
@@ -66,7 +66,7 @@ pForm.addEventListener('submit', async (e) => {
     const id = document.getElementById('pId').value;
     const podaci = {
         naziv: document.getElementById('pNaziv').value,
-        jezik: document.getElementById('pJezik').value,
+        tagovi: document.getElementById('pTagovi').value,
         opis: document.getElementById('pOpis').value,
         status: document.getElementById('pStatus').value,
         link: document.getElementById('pLink').value
@@ -101,7 +101,7 @@ async function ucitajProjekte() {
         kol.innerHTML = `
             <div class="card p-3 h-100">
                 <h5>${p.naziv}</h5>
-                <p class="mb-1"><strong>${p.jezik}</strong> — ${p.status}</p>
+                <p class="mb-1"><strong>${p.tagovi.join(', ')}</strong> — ${p.status}</p>
                 <p class="small">${p.opis}</p>
                 <div>
                     <button class="btn btn-sm btn-primary" onclick="urediProjekt(${p.id})">Uredi</button>
@@ -116,7 +116,7 @@ function urediProjekt(id) {
     const p = pCache.find(x => x.id === id);
     document.getElementById('pId').value = p.id;
     document.getElementById('pNaziv').value = p.naziv;
-    document.getElementById('pJezik').value = p.jezik;
+    document.getElementById('pTagovi').value = p.tagovi.join(', ');
     document.getElementById('pOpis').value = p.opis;
     document.getElementById('pStatus').value = p.status;
     document.getElementById('pLink').value = p.link;

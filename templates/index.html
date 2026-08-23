@@ -44,7 +44,7 @@ async function ucitajProjekte() {
 }
 
 function popuniFilterOpcije() {
-    const jezici = [...new Set(pSvi.map(p => p.jezik))].sort();
+    const jezici = [...new Set(pSvi.flatMap(p => p.tagovi))].sort();
     const statusi = [...new Set(pSvi.map(p => p.status))].sort();
 
     document.getElementById('fJezik').innerHTML =
@@ -65,7 +65,7 @@ function primijeniFiltere() {
         const uTekstu = !tekst ||
             p.naziv.toLowerCase().includes(tekst) ||
             p.opis.toLowerCase().includes(tekst);
-        const uJeziku = !jezik || p.jezik === jezik;
+        const uJeziku = !jezik || p.tagovi.includes(jezik);
         const uStatusu = !status || p.status === status;
         return uTekstu && uJeziku && uStatusu;
     });
@@ -84,7 +84,7 @@ function renderProjekti(svi) {
             <div class="card p-3 h-100 project-card">
                 <h5>${p.naziv}</h5>
                 <div class="projekt-meta">
-                    <span class="projekt-jezik">${p.jezik}</span>
+                    ${p.tagovi.map(t => `<span class="projekt-jezik">${t}</span>`).join('')}
                     <span class="projekt-status">${p.status}</span>
                 </div>
                 <p class="projekt-opis">${p.opis}</p>
