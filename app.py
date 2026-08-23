@@ -7,6 +7,7 @@ import secrets
 from functools import wraps
 from datetime import datetime
 from dotenv import load_dotenv
+import subprocess
 
 # Dio gdje se radi sa bazom podataka kako bi se formirala baza
 app = Flask(__name__)
@@ -276,6 +277,21 @@ def galerija_pokazi():
         for zapis in svi
     ])
 
+# Ruta za admin backup
+@app.route("/admin/backup", methods=["POST"])
+@admin_required
+def pokreni_backup():
+    try:
+        rezultat = subprocess.run(
+            [os.path.join(os.path.dirname(__file__), "backup.sh")],
+            capture_output=True, text=True, timeout=30
+        )
+        if rezultat.returncode != 0:
+            return jsonify({"uspjeh":False, "poruka": rezultat.stderr}), 500
+        return jsonify({"uspjeh": True, "poruka": rezultat.stdout})
+    except Exception as e:
+        return jsonify({"uspjeh": False, "poruka": str(e)}), 500
+    
 # Ruta za dodavanje slike u galeriju
 @app.route("/admin/slike/dodavanje", methods=["POST"])
 @admin_required
